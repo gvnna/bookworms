@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 
 class DatabaseConnection {
-  private prisma: PrismaClient;
+  public prisma: PrismaClient;
 
   constructor() {
     this.prisma = new PrismaClient();
@@ -11,7 +11,9 @@ class DatabaseConnection {
     try {
       await this.prisma.$connect();
     } catch (error) {
-      throw new Error(`Error: could not connect to test database! Make sure you are running the back-end with the "docker-compose up" command. ${error}`);
+      throw new Error(
+        `Error: could not connect to test database! Make sure you are running the back-end with the "docker-compose up" command. ${error}`,
+      );
     }
   }
 
@@ -20,9 +22,9 @@ class DatabaseConnection {
   }
 
   async clear() {
-    const tables = await this.prisma.$queryRaw`
+    const tables = (await this.prisma.$queryRaw`
       SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = 'public' AND tablename NOT LIKE '_prisma_%';
-    ` as { tablename: string }[];
+    `) as { tablename: string }[];
 
     await Promise.all(
       tables.map(async (table) => {

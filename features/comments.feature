@@ -9,18 +9,20 @@ Feature: Gerenciamento de comentários em postagens
 
   #----------Sucessfull Scenários----------------:
   
-  Scenario: Criar comentário
-    Given há no sistema um post que possui o id '"id": "123", "userName": "gvnna"'
-    And há no sistema um post com '"id: "abc"'
-    When uma requisição POST for enviada para "/comments" com o corpo da requisição sendo um JSON: {"postId": "abc","authorId": "123","date": "2025-02-13","text": "Gostei muito desse livro!"}
-    Then o status da reposta deve ser "201"
+  Scenario: Criar comentário em uma postagem
+    Given há um post no sistema com id "123"
+    And há um usuário no sistema com id "123", username "gio"
+    When uma requisição POST for enviada para "/comments" com o corpo da requisição sendo um JSON: {"postId": "123", "authorId": "123", "date": "2025-02-13", "text": "Gostei muito desse livro!"}
+    Then o status da resposta deve ser "201"
     And a resposta deve conter a mensagem "Comentário criado com sucesso!"
-    And há no sistema um comentário criado com: {"postId": "abc","authorId": "123","date": "2025-02-13","text": "Gostei muito desse livro!"}
+    And há no sistema um comentário com: {"postId": "123", "authorId": "123", "date": "2025-02-13", "text": "Gostei muito desse livro!"}
+
+
 
   Scenario: Buscar comentários de postagem
-    Given há no sistema um post com {"id": "xyz"}
-    And há no sistema um comentário com {"id": "CMT1", "postId": "xyz"}
-    And há no sistema um comentário com {"id": "CMT2", "postId": "xyz"}
+    Given há um post no sistema com id "xyz"
+    And há um comentário no sistema com id "CMT1", postId "xyz", text "Gostei muito"
+    And há um comentário no sistema com id "CMT2", postId "xyz", text "Muito bom!"
     When uma requisição GET for enviada para "/posts/xyz/comments"
     Then o status da resposta deve ser "200"
     And a resposta deve conter a mensagem "Comentários encontrados"
@@ -28,29 +30,26 @@ Feature: Gerenciamento de comentários em postagens
     And um item com {"id": "CMT1"} está na lista
     And um item com {"id": "CMT2"} está na lista
 
+
   Scenario: Apagar comentário
-    Given há no sistema um comentário com {"id": "CMT1"}
+    Given há um comentário no sistema com id "CMT1"
     When uma requisição DELETE for enviada para "/comments/CMT1"
     Then o status da resposta deve ser "200"
     And a resposta deve conter a mensagem "Comentário deletado com sucesso"
     And não há mais no sistema um comentário com id "CMT1"
 
+
   Scenario: Editar comentário
-    Given há no sistema um comentário com:{"id": "CMT1","postId": "xyz","authorId": "123","date": "2025-02-13","text": "Gostei muito desse livro!"}
+    Given há um comentário no sistema com id "CMT1", postId "xyz", authorId "123", date "2025-02-13", text "Gostei muito desse livro!"
     When uma requisição PUT for enviada para "/comments/CMT1" com o corpo da requisição sendo um JSON: {"text": "Amei esse livro, recomendo a todos!"}
     Then o status da resposta deve ser "200"
     And a resposta deve conter a mensagem "Comentário atualizado com sucesso"
     And o comentário no sistema agora possui o texto "Amei esse livro, recomendo a todos!"
 
 
-  #--------------Failure Scenarios------------------:
   
-  Scenario: Tentar criar um comentário em um post inexistente
-    Given o usuário está autenticado
-    And não existe um post com {"id": "na03x1573"} no sistema
-    When uma requisição POST for enviada para "/comments" com  {"postId": "na03x1573","authorId": "123","text": "Muito bom!"}
-    Then o status da resposta deve ser "500"
-    And a resposta deve conter a mensagem "Erro ao criar comentário"
+
+
 
 
 

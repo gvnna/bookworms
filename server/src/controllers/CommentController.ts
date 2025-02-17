@@ -4,22 +4,19 @@ import { Comment } from '../DTOs/index';
 import { ZodError } from 'zod';
 
 class CommentController {
-  // Criar um comentário
   async createComment(req: Request, res: Response) {
     try {
       const validatedData = Comment.parse(req.body);
       const { postId, authorId, text } = validatedData;
 
-      // Criando o comentário
       const newComment = await CommentRepository.create({
         post: {
-          connect: { id: postId }, // conectando o post
+          connect: { id: postId },
         },
         author: {
-          // agora estamos conectando o autor (usuário)
-          connect: { id: authorId }, // conectando o autor (usuário)
+          connect: { id: authorId },
         },
-        text, // texto do comentário
+        text,
       });
 
       res.status(201).json({
@@ -27,11 +24,9 @@ class CommentController {
         data: newComment,
       });
     } catch (error) {
-      // Verificando se o erro é de validação do Zod
       if (error instanceof ZodError) {
         const errorMessages = error.errors.map((err) => err.message);
 
-        // Checar por mensagens específicas
         if (errorMessages.includes('The comment cannot be empty')) {
           res.status(400).json({ message: 'Comentário não pode ser vazio' });
         } else if (
@@ -41,11 +36,9 @@ class CommentController {
             .status(400)
             .json({ message: 'Comentário deve ter no máximo 150 caracteres' });
         } else {
-          // Caso outros erros de validação sejam encontrados
           res.status(400).json({ message: errorMessages.join(', ') });
         }
       } else {
-        // Para outros tipos de erro
         res.status(500).json({
           message: 'Erro ao criar comentário',
           error: (error as Error).message,
@@ -76,6 +69,8 @@ class CommentController {
   // Atualizar comentário
   async updateComment(req: Request, res: Response) {
     try {
+      console.log('Atualizando comentário', req.params.commentId, req.body); // Verifique os dados da requisição
+
       const validatedData = Comment.pick({ text: true }).parse(req.body);
       const { commentId } = req.params;
 
@@ -83,11 +78,13 @@ class CommentController {
         commentId,
         validatedData.text,
       );
+
       res.status(200).json({
         message: 'Comentário atualizado com sucesso',
         data: updatedComment,
       });
     } catch (error) {
+      console.log('Erro ao atualizar comentário', error); // Log de erro
       res.status(500).json({
         message: 'Erro ao atualizar comentário',
         error: (error as Error).message,
